@@ -1,0 +1,228 @@
+GET /register:
+  description: Cadastro de usuário bem-sucedido
+  request:
+    method: POST
+    body:
+      name: "João Silva"
+      email: "joao.silva@example.com"
+      password: "SenhaSegura123!"
+  response:
+    status: 201
+    body:
+      message: "Usuário criado com sucesso"
+_type: export
+__export_format: 4
+__export_date: 2025-10-18T00:00:00.000Z
+__export_source: insomnia.desktop.app:v2023.5.8
+resources:
+  - _id: wrk_main
+    type: Workspace
+    name: "Backend MongoDB"
+
+  - _id: env_base
+    parentId: wrk_main
+    type: Environment
+    name: "Base Environment"
+    data:
+      base_url: "http://localhost:3000"
+      token: ""
+
+  - _id: env_production
+    parentId: env_base
+    type: Environment
+    name: "Production"
+    data:
+      base_url: "https://seu-dominio.vercel.app"
+      token: ""
+
+  - _id: fld_auth
+    parentId: wrk_main
+    type: RequestGroup
+    name: "Autenticação"
+
+  - _id: fld_protected
+    parentId: wrk_main
+    type: RequestGroup
+    name: "Rotas Protegidas"
+
+  - _id: req_register_success
+    parentId: fld_auth
+    type: Request
+    name: "Cadastro bem-sucedido"
+    method: POST
+    url: "{{ _.base_url }}/register"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "João Silva",
+          "email": "joao.silva@example.com",
+          "password": "SenhaSegura123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_register_email_exists
+    parentId: fld_auth
+    type: Request
+    name: "Cadastro - E-mail já existente"
+    method: POST
+    url: "{{ _.base_url }}/register"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "Maria Souza",
+          "email": "joao.silva@example.com",
+          "password": "OutraSenha123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_register_invalid_password
+    parentId: fld_auth
+    type: Request
+    name: "Cadastro - Senha inválida"
+    method: POST
+    url: "{{ _.base_url }}/register"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "Carlos Pereira",
+          "email": "carlos.pereira@example.com",
+          "password": "123"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_register_invalid_email
+    parentId: fld_auth
+    type: Request
+    name: "Cadastro - E-mail inválido"
+    method: POST
+    url: "{{ _.base_url }}/register"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "Ana Lima",
+          "email": "ana.lima@com",
+          "password": "SenhaValida123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_register_malformed
+    parentId: fld_auth
+    type: Request
+    name: "Cadastro - Requisição mal formatada"
+    method: POST
+    url: "{{ _.base_url }}/register"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "Lucas"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_login_success
+    parentId: fld_auth
+    type: Request
+    name: "Login bem-sucedido"
+    method: POST
+    url: "{{ _.base_url }}/login"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "joao.silva@example.com",
+          "password": "SenhaSegura123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_login_wrong_password
+    parentId: fld_auth
+    type: Request
+    name: "Login - Senha inválida"
+    method: POST
+    url: "{{ _.base_url }}/login"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "joao.silva@example.com",
+          "password": "SenhaErrada123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_login_user_not_found
+    parentId: fld_auth
+    type: Request
+    name: "Login - E-mail inválido"
+    method: POST
+    url: "{{ _.base_url }}/login"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "email.inexistente@example.com",
+          "password": "SenhaSegura123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_login_malformed
+    parentId: fld_auth
+    type: Request
+    name: "Login - Requisição mal formatada"
+    method: POST
+    url: "{{ _.base_url }}/login"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "joao.silva@example.com"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_protected_valid_token
+    parentId: fld_protected
+    type: Request
+    name: "Acesso com token válido"
+    method: GET
+    url: "{{ _.base_url }}/protected"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_protected_no_token
+    parentId: fld_protected
+    type: Request
+    name: "Acesso sem token"
+    method: GET
+    url: "{{ _.base_url }}/protected"
+
+  - _id: req_protected_invalid_token
+    parentId: fld_protected
+    type: Request
+    name: "Acesso com token inválido"
+    method: GET
+    url: "{{ _.base_url }}/protected"
+    headers:
+      - name: Authorization
+        value: "Bearer token_invalido_aqui"
