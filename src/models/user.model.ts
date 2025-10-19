@@ -1,5 +1,6 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Model } from 'mongoose';
 import bcrypt from 'bcrypt';
+import { getSecondaryConnection } from '../database/connection.database';
 
 export interface IUser extends Document {
   name: string;
@@ -40,3 +41,16 @@ userSchema.methods.comparePassword = async function (password: string) {
 };
 
 export const User = model<IUser>('User', userSchema);
+
+// Função para obter o modelo local (lazy loading)
+let userLocalModel: Model<IUser> | null = null;
+
+export const getUserLocal = (): Model<IUser> | null => {
+  if (!userLocalModel) {
+    const secondaryConn = getSecondaryConnection();
+    if (secondaryConn) {
+      userLocalModel = secondaryConn.model<IUser>('User', userSchema);
+    }
+  }
+  return userLocalModel;
+};

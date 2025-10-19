@@ -1,4 +1,4 @@
-import { User } from '../models/user.model';
+import { User, getUserLocal } from '../models/user.model';
 import { sign, verify } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { UserPayload } from '../types/index';
@@ -9,6 +9,7 @@ import { BadRequestException, NotFoundException, UnauthorizedException, Unproces
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const DUAL_SYNC = process.env.MONGODB_DUAL_SYNC === 'true';
 
 export const registerUser = async (name: string, email: string, password: string) => {
     // Validações básicas para 422
@@ -21,7 +22,29 @@ export const registerUser = async (name: string, email: string, password: string
 
     const newUser = new User({ name, email, password: password });
     await newUser.save();
-    logger.info(`User registered: ${email}`);
+    logger.info(`User registered in Atlas: ${email}`);
+    
+    // Se dual sync está ativo, salva também no banco local
+    if (DUAL_SYNC) {
+        logger.info(`Dual Sync enabled, attempting to save to Local DB...`);
+        const UserLocal = getUserLocal();
+        if (!UserLocal) {
+            logger.error(`UserLocal model is null! Secondary connection may have failed.`);
+        } else {
+            try {
+                const newUserLocal = new UserLocal({ name, email, password: password });
+                await newUserLocal.save();
+                logger.info(`✅ User registered in Local DB: ${email}`);
+            } catch (error) {
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                logger.error(`❌ Failed to save user in Local DB: ${errorMsg}`);
+                console.error('Full error:', error);
+            }
+        }
+    } else {
+        logger.info(`Dual Sync is disabled (MONGODB_DUAL_SYNC=${process.env.MONGODB_DUAL_SYNC})`);
+    }
+    
     return newUser;
 };
 

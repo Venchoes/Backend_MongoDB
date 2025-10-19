@@ -1,5 +1,7 @@
 # Backend_MongoDB
 
+#video do youtube: https://www.youtube.com/watch?v=8roSmcjYvPM
+
 Backend completo em Node.js (TypeScript) + Express + MongoDB com autenticação JWT, seguindo arquitetura de camadas.
 
 ## 📋 Funcionalidades
