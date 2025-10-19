@@ -37,7 +37,7 @@ app.use(errorHandler);
 
 // Start the server
 app.listen(PORT, () => {
-    console.log('[SERVER] ✅ Servidor rodando em http://localhost:${PORT}');
+    console.log(`[SERVER] ✅ Servidor rodando em http://localhost:${PORT}`);
     console.log('[SERVER] Endpoints disponíveis:');
     console.log('[SERVER]   POST /register');
     console.log('[SERVER]   POST /login');
