@@ -1,6 +1,9 @@
 import express from 'express';
 import connectToDatabase from './database/connection.database';
-import { configureApp } from './app';
+import authRoutes from './routes/auth.routes';
+import protectedRoutes from './routes/protected.routes';
+import errorHandler from './middlewares/errorHandler.middleware';
+import { Request, Response } from 'express';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,7 +15,25 @@ console.log('[SERVER] Ambiente:', process.env.NODE_ENV || 'development');
 connectToDatabase();
 
 // Configure the Express application
-configureApp(app);
+app.use(express.json());
+
+app.get("/", (req: Request, res: Response) => {
+  
+  res.status(200).json({ 
+
+    message: '🚀 Projeto Backend com Express e MongoDB funcionando corretamente :)!',
+    status: 'WORKING',
+  
+  });
+
+});
+
+// Rotas (MVP requer /register, /login e /protected)
+app.use('/', authRoutes); // POST /register, POST /login
+app.use('/protected', protectedRoutes); // GET /protected
+
+// Middleware de erro
+app.use(errorHandler);
 
 // Start the server
 app.listen(PORT, () => {
