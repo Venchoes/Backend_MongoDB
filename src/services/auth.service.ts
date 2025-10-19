@@ -19,8 +19,7 @@ export const registerUser = async (name: string, email: string, password: string
     const exists = await User.findOne({ email }).select('_id');
     if (exists) throw new ConflictException('E-mail já existente');
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
+    const newUser = new User({ name, email, password: password });
     await newUser.save();
     logger.info(`User registered: ${email}`);
     return newUser;

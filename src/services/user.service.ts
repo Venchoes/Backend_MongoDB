@@ -9,8 +9,7 @@ export class UserService {
             throw new ConflictException('Email já está em uso.');
         }
 
-        const hashedPassword = await hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
+        const newUser = new User({ name, email, password: password });
         await newUser.save();
         return newUser;
     }
