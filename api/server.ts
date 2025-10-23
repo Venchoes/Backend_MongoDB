@@ -1,45 +1,62 @@
 import express from 'express';
 import connectToDatabase from './database/connection.database';
+import config from './config/env.config';
 import authRoutes from './routes/auth.routes';
 import protectedRoutes from './routes/protected.routes';
+import taskRoutes from './routes/task.routes';
 import errorHandler from './middlewares/errorHandler.middleware';
-import { Request, Response } from 'express';
+import { logger } from './utils/logger.util';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-console.log('[SERVER] Iniciando servidor...');
-console.log('[SERVER] Ambiente:', process.env.NODE_ENV || 'development');
-
-// Connect to the database
-connectToDatabase();
-
-// Configure the Express application
+// Middlewares
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req: Request, res: Response) => {
-  
-  res.status(200).json({ 
-
-    message: '🚀 Projeto Backend com Express e MongoDB funcionando corretamente :)!',
-    status: 'WORKING',
-  
+// Health check
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
   });
-
 });
 
-// Rotas (MVP requer /register, /login e /protected)
-app.use('/', authRoutes); // POST /register, POST /login
-app.use('/protected', protectedRoutes); // GET /protected
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api', protectedRoutes);
+app.use('/api/tasks', taskRoutes);
 
-// Middleware de erro
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Rota não encontrada',
+    path: req.path,
+  });
+});
+
+// Error handler
 app.use(errorHandler);
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`[SERVER] ✅ Servidor rodando em http://localhost:${PORT}`);
-    console.log('[SERVER] Endpoints disponíveis:');
-    console.log('[SERVER]   POST /register');
-    console.log('[SERVER]   POST /login');
-    console.log('[SERVER]   GET /protected');
-});
+// Inicialização do servidor
+const startServer = async () => {
+  try {
+    // Conectar ao banco de dados
+    await connectToDatabase();
+
+    // Iniciar servidor
+    app.listen(config.PORT, () => {
+      logger.info(`🚀 Servidor rodando na porta ${config.PORT}`);
+      logger.info(`🗄️  MongoDB conectado`);
+      logger.info(`✨ API disponível em: http://localhost:${config.PORT}`);
+      logger.info(`❤️  Health check: http://localhost:${config.PORT}/health`);
+    });
+  } catch (error) {
+    logger.error('Erro ao iniciar servidor:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
+
+export default app;

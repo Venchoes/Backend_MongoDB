@@ -1,31 +1,64 @@
-# Backend_MongoDB
+# Backend_MongoDB - Task Manager API
 
 #video do youtube: https://www.youtube.com/watch?v=8roSmcjYvPM
 
-Backend completo em Node.js (TypeScript) + Express + MongoDB com autenticação JWT, seguindo arquitetura de camadas.
+Backend completo em Node.js (TypeScript) + Express + MongoDB com autenticação JWT e gerenciamento de tarefas, seguindo arquitetura de camadas.
 
 ## 📋 Funcionalidades
 
 ### Rotas Públicas
-- **POST /register** - Cadastro de usuário com validações (nome, e-mail, senha)
-- **POST /login** - Autenticação e geração de token JWT
+- **POST /api/auth/register** - Cadastro de usuário com validações
+- **POST /api/auth/login** - Autenticação e geração de token JWT
 
-### Rotas Protegidas
-- **GET /protected** - Acesso autorizado apenas com token JWT válido
+### Rotas Protegidas (Requerem JWT)
+- **GET /api/protected** - Rota de teste protegida
+
+### CRUD de Tarefas (Requer JWT)
+- **POST /api/tasks** - Cria uma nova tarefa
+- **GET /api/tasks** - Lista todas as tarefas do usuário autenticado
+- **GET /api/tasks?status=pending** - Lista tarefas filtradas por status
+- **GET /api/tasks?priority=high** - Lista tarefas filtradas por prioridade
+- **GET /api/tasks?search=palavra** - Busca tarefas por texto
+- **GET /api/tasks/:id** - Retorna detalhes de uma tarefa
+- **PUT /api/tasks/:id** - Atualiza todos os dados de uma tarefa
+- **PATCH /api/tasks/:id** - Atualiza parcialmente uma tarefa
+- **DELETE /api/tasks/:id** - Remove uma tarefa
 
 ## 🏗️ Arquitetura
 
 ```
-src/
+api/
 ├── controllers/    # Lógica de requisição/resposta
+│   ├── auth.controller.ts
+│   ├── task.controller.ts
+│   └── protected.controller.ts
 ├── services/       # Regras de negócio
+│   ├── auth.service.ts
+│   ├── user.service.ts
+│   └── task.service.ts
 ├── models/         # Schemas do MongoDB (Mongoose)
+│   ├── user.model.ts
+│   └── task.model.ts
 ├── routes/         # Definição de rotas
+│   ├── auth.routes.ts
+│   ├── task.routes.ts
+│   └── protected.routes.ts
 ├── middlewares/    # Auth, validação, error handling
+│   ├── auth.middleware.ts
+│   ├── taskValidation.middleware.ts
+│   ├── validation.middleware.ts
+│   └── errorHandler.middleware.ts
 ├── database/       # Conexão com MongoDB
+│   └── connection.database.ts
 ├── utils/          # Logs, JWT, exceções
+│   ├── logger.util.ts
+│   ├── jwt.util.ts
+│   └── exceptions.util.ts
 ├── types/          # Interfaces TypeScript
+│   ├── index.ts
+│   └── task.types.ts
 └── config/         # Configurações de ambiente
+    └── env.config.ts
 ```
 
 ## 🚀 Como Rodar Localmente
@@ -39,7 +72,7 @@ src/
 ```bash
 # Clone o repositório
 git clone https://github.com/Venchoes/Backend_MongoDB.git
-cd Backend_MongoDB/Backend_MongoDB
+cd Backend_MongoDB
 
 # Instale as dependências
 npm install
@@ -53,7 +86,9 @@ cp .env.example .env
 
 ```env
 PORT=3000
-MONGODB_URI=mongodb://localhost:27017/mydatabase
+MONGODB_URI_LOCAL=mongodb://root:example@localhost:27017/my-database?authSource=admin
+MONGODB_URI_ATLAS=sua_connection_string_do_atlas
+MONGODB_DUAL_SYNC=false
 JWT_SECRET=sua_chave_secreta_super_segura
 NODE_ENV=development
 ```
@@ -72,68 +107,81 @@ A API estará disponível em `http://localhost:3000`
 
 ## 📦 Testando os Endpoints
 
-### Importar no Insomnia/Postman
+### Importar no Insomnia
 
 1. Abra o Insomnia
 2. Application → Preferences → Data → Import Data
 3. Selecione o arquivo `requests/requests.yaml`
-4. Ajuste a variável `base_url` no ambiente
+4. Configure as variáveis de ambiente:
+   - `base_url`: http://localhost:3000/api
+   - `token`: (será preenchido após login)
+   - `task_id`: (será preenchido após criar tarefa)
 
-### Exemplos de Requisição
+### Fluxo de Teste Completo
 
-**Cadastro**
+1. **Registrar usuário** → Pegue o `token` da resposta
+2. **Login** → Atualize o `token` no ambiente
+3. **Criar tarefa** → Pegue o `_id` da resposta
+4. **Atualizar `task_id`** no ambiente
+5. **Testar todas as operações CRUD**
+
+## 📝 Exemplos de Requisições
+
+### Criar Tarefa
 ```bash
-POST /register
+POST /api/tasks
+Authorization: Bearer <seu_token>
 Content-Type: application/json
 
 {
-  "name": "João Silva",
-  "email": "joao.silva@example.com",
-  "password": "SenhaSegura123!"
+  "title": "Implementar autenticação",
+  "description": "Adicionar middleware de JWT",
+  "status": "in_progress",
+  "priority": "high",
+  "dueDate": "2025-10-30T23:59:59Z"
 }
 ```
 
-**Login**
+### Listar Tarefas com Filtros
 ```bash
-POST /login
+GET /api/tasks?status=pending&priority=high&search=projeto
+Authorization: Bearer <seu_token>
+```
+
+### Atualizar Parcialmente
+```bash
+PATCH /api/tasks/:id
+Authorization: Bearer <seu_token>
 Content-Type: application/json
 
 {
-  "email": "joao.silva@example.com",
-  "password": "SenhaSegura123!"
+  "status": "completed"
 }
 ```
-
-**Acesso Protegido**
-```bash
-GET /protected
-Authorization: Bearer <seu_token_jwt>
-```
-
-## 📝 Status HTTP e Respostas
-
-### Cadastro (/register)
-- ✅ **201** - Usuário criado com sucesso
-- ❌ **409** - E-mail já existente
-- ❌ **422** - Dados inválidos (nome, e-mail ou senha)
-
-### Login (/login)
-- ✅ **200** - Login bem-sucedido (retorna token)
-- ❌ **400** - Requisição mal formatada
-- ❌ **401** - Senha incorreta
-- ❌ **404** - Usuário não encontrado
-
-### Rota Protegida (/protected)
-- ✅ **200** - Acesso autorizado
-- ❌ **401** - Token não fornecido ou inválido
 
 ## 🔒 Segurança
 
-- Senhas hashadas com `bcrypt` (salt rounds: 10)
-- Tokens JWT com expiração de 1 hora
-- Validação de e-mail e senha (tamanho mínimo, formato)
-- Middleware de autenticação para rotas protegidas
-- Error handling centralizado
+- ✅ Senhas hashadas com `bcrypt`
+- ✅ Tokens JWT com expiração de 1 hora
+- ✅ Validação de entrada de dados
+- ✅ Proteção de rotas com middleware de autenticação
+- ✅ Isolamento de dados por usuário (cada usuário vê apenas suas tarefas)
+- ✅ Proteção contra acesso não autorizado (403)
+- ✅ Validação de ObjectIds do MongoDB
+- ✅ Error handling centralizado
+
+## 📊 Status HTTP
+
+### Tasks
+- **201** - Tarefa criada com sucesso
+- **200** - Operação bem-sucedida
+- **204** - Tarefa deletada com sucesso
+- **400** - Dados inválidos
+- **401** - Token não fornecido ou inválido
+- **403** - Acesso negado (tarefa de outro usuário)
+- **404** - Tarefa não encontrada
+- **422** - Erro de validação
+- **500** - Erro interno do servidor
 
 ## 🛠️ Tecnologias
 
@@ -145,27 +193,33 @@ Authorization: Bearer <seu_token_jwt>
 - **winston** - Logging
 - **express-validator** - Validação de entrada
 
-## 📊 Logs
+## 🎯 Funcionalidades Implementadas
 
-Logs são salvos em:
-- `combined.log` - Todos os logs
-- `error.log` - Apenas erros
-- Console - Logs em tempo real (desenvolvimento)
+### MVP Completo
+- ✅ CRUD completo de tarefas
+- ✅ Autenticação JWT
+- ✅ Filtros de busca (status, priority, search)
+- ✅ Isolamento de dados por usuário
+- ✅ Validação de dados
+- ✅ Logs de operações e erros
+- ✅ Error handling robusto
+- ✅ Documentação completa
 
-## 🌐 Deploy
-
-### MongoDB Atlas (Produção)
-1. Crie um cluster no [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Obtenha a connection string
-3. Atualize `MONGODB_URI` no ambiente de produção
-
-### Vercel/Render
-Configure as variáveis de ambiente no painel da plataforma:
-- `PORT`
-- `MONGODB_URI`
-- `JWT_SECRET`
-- `NODE_ENV=production`
+### Recursos Adicionais
+- ✅ Suporte a PUT e PATCH
+- ✅ Múltiplos filtros simultâneos
+- ✅ Busca por texto em título e descrição
+- ✅ Validação de datas ISO 8601
+- ✅ Health check endpoint
+- ✅ Timestamps automáticos
+- ✅ Índices no MongoDB para performance
 
 ## 📄 Licença
 
 ISC
+
+---
+
+**Desenvolvido por:** [Seu Nome]  
+**Repositório:** https://github.com/Venchoes/Backend_MongoDB  
+**Deploy:** [Link da aplicação hospedada]

@@ -1,17 +1,17 @@
 import { Response } from 'express';
 import { AuthRequest } from '../types';
 import { TaskService } from '../services/task.service';
-import logger from '../utils/logger.util';
+import { logger } from '../utils/logger.util';
 
 const taskService = new TaskService();
 
 export class TaskController {
     async post(req: AuthRequest, res: Response): Promise<void> {
         try{
-            const userId = req.userId;
+            const userId = req.userId!;
             const task = await taskService.createTask(userId, req.body);
 
-            req.status(201).json({
+      res.status(201).json({
                 message: 'Tarefa criada com sucesso',
                 data: task,
             });

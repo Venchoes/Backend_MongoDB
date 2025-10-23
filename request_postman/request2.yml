@@ -1,0 +1,279 @@
+_type: export
+__export_format: 4
+__export_date: 2025-10-22T00:00:00.000Z
+__export_source: insomnia.desktop.app:v2023.5.8
+
+resources:
+  - _id: env_base
+    _type: environment
+    name: Base Environment
+    data:
+      base_url: http://localhost:3000/api
+      token: ""
+      user_id: ""
+      task_id: ""
+
+  # ==================== AUTENTICAÇÃO ====================
+  
+  - _id: req_register
+    _type: request
+    name: 1. Register User
+    method: POST
+    url: "{{ _.base_url }}/auth/register"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "name": "João Silva",
+          "email": "joao.silva@example.com",
+          "password": "SenhaSegura123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_login
+    _type: request
+    name: 2. Login User
+    method: POST
+    url: "{{ _.base_url }}/auth/login"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "joao.silva@example.com",
+          "password": "SenhaSegura123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+
+  - _id: req_protected
+    _type: request
+    name: 3. Access Protected Route
+    method: GET
+    url: "{{ _.base_url }}/protected"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  # ==================== TASKS - CRUD COMPLETO ====================
+
+  - _id: req_create_task
+    _type: request
+    name: 4. Create Task
+    method: POST
+    url: "{{ _.base_url }}/tasks"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "title": "Implementar autenticação JWT",
+          "description": "Adicionar middleware de autenticação nas rotas protegidas",
+          "status": "in_progress",
+          "priority": "high",
+          "dueDate": "2025-10-30T23:59:59Z"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_list_all_tasks
+    _type: request
+    name: 5. List All Tasks
+    method: GET
+    url: "{{ _.base_url }}/tasks"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_list_tasks_filtered_status
+    _type: request
+    name: 6. List Tasks (Filtered by Status)
+    method: GET
+    url: "{{ _.base_url }}/tasks?status=in_progress"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_list_tasks_filtered_priority
+    _type: request
+    name: 7. List Tasks (Filtered by Priority)
+    method: GET
+    url: "{{ _.base_url }}/tasks?priority=high"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_list_tasks_search
+    _type: request
+    name: 8. List Tasks (Search)
+    method: GET
+    url: "{{ _.base_url }}/tasks?search=autenticação"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_list_tasks_multiple_filters
+    _type: request
+    name: 9. List Tasks (Multiple Filters)
+    method: GET
+    url: "{{ _.base_url }}/tasks?status=pending&priority=high&search=projeto"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_get_task_by_id
+    _type: request
+    name: 10. Get Task by ID
+    method: GET
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_update_task_put
+    _type: request
+    name: 11. Update Task (PUT - Full)
+    method: PUT
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "title": "Implementar autenticação JWT - Atualizado",
+          "description": "Middleware de autenticação implementado e testado",
+          "status": "completed",
+          "priority": "high",
+          "dueDate": "2025-10-30T23:59:59Z"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_update_task_patch
+    _type: request
+    name: 12. Update Task (PATCH - Partial)
+    method: PATCH
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "status": "completed"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_delete_task
+    _type: request
+    name: 13. Delete Task
+    method: DELETE
+    url: "{{ _.base_url }}/tasks/{{ _.task_id }}"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  # ==================== CASOS DE ERRO ====================
+
+  - _id: req_error_no_token
+    _type: request
+    name: "ERROR: No Token"
+    method: GET
+    url: "{{ _.base_url }}/tasks"
+
+  - _id: req_error_invalid_token
+    _type: request
+    name: "ERROR: Invalid Token"
+    method: GET
+    url: "{{ _.base_url }}/tasks"
+    headers:
+      - name: Authorization
+        value: "Bearer token_invalido_aqui"
+
+  - _id: req_error_malformed_token
+    _type: request
+    name: "ERROR: Malformed Token"
+    method: GET
+    url: "{{ _.base_url }}/tasks"
+    headers:
+      - name: Authorization
+        value: "InvalidFormat"
+
+  - _id: req_error_task_not_found
+    _type: request
+    name: "ERROR: Task Not Found"
+    method: GET
+    url: "{{ _.base_url }}/tasks/507f1f77bcf86cd799439011"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_error_invalid_task_id
+    _type: request
+    name: "ERROR: Invalid Task ID"
+    method: GET
+    url: "{{ _.base_url }}/tasks/invalid_id_format"
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_error_invalid_status
+    _type: request
+    name: "ERROR: Invalid Status"
+    method: POST
+    url: "{{ _.base_url }}/tasks"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "title": "Tarefa teste",
+          "status": "status_invalido"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_error_missing_title
+    _type: request
+    name: "ERROR: Missing Required Field"
+    method: POST
+    url: "{{ _.base_url }}/tasks"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "description": "Tarefa sem título"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"
+
+  - _id: req_error_invalid_date
+    _type: request
+    name: "ERROR: Invalid Date Format"
+    method: POST
+    url: "{{ _.base_url }}/tasks"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "title": "Tarefa teste",
+          "dueDate": "data_invalida"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ _.token }}"

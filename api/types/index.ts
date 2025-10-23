@@ -1,3 +1,4 @@
+import { Request } from 'express';
 export interface User {
     id: string;
     name: string;
@@ -16,4 +17,8 @@ export interface AuthResponse {
 
 export interface ProtectedResponse {
     message: string;
+}
+
+export interface AuthRequest extends Request {
+    userId?: string;
 }

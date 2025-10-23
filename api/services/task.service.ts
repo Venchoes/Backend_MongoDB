@@ -1,7 +1,7 @@
 import Task, { ITask } from '../models/task.model';
-import { ITaskDTO, ITaskFilters } from '../types/task.type';
-import { NotFoundError, ForbiddenError } from '../utils/exceptions.util';
-import logger from '../utils/logger.util';
+import { ITaskDTO, ITaskFilters } from '../types/task.types';
+import { NotFoundException } from '../utils/exceptions.util';
+import { logger } from '../utils/logger.util';
 
 export class TaskService {
   /**
@@ -71,7 +71,7 @@ export class TaskService {
       const task = await Task.findOne({ _id: taskId, userId });
 
       if (!task) {
-        throw new NotFoundError('Tarefa não encontrada');
+  throw new NotFoundException('Tarefa não encontrada');
       }
 
       return task;
@@ -91,7 +91,7 @@ export class TaskService {
       const task = await Task.findOne({ _id: taskId, userId });
 
       if (!task) {
-        throw new NotFoundError('Tarefa não encontrada');
+  throw new NotFoundException('Tarefa não encontrada');
       }
 
       // Atualiza todos os campos
@@ -121,7 +121,7 @@ export class TaskService {
       const task = await Task.findOne({ _id: taskId, userId });
 
       if (!task) {
-        throw new NotFoundError('Tarefa não encontrada');
+  throw new NotFoundException('Tarefa não encontrada');
       }
 
       // Atualiza apenas os campos fornecidos
@@ -151,7 +151,7 @@ export class TaskService {
       const task = await Task.findOne({ _id: taskId, userId });
 
       if (!task) {
-        throw new NotFoundError('Tarefa não encontrada');
+  throw new NotFoundException('Tarefa não encontrada');
       }
 
       await Task.deleteOne({ _id: taskId });

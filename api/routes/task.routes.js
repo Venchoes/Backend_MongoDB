@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const task_controller_1 = require("../controllers/task.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const task_middleware_1 = require("../middlewares/task.middleware");
+const router = (0, express_1.Router)();
+const taskController = new task_controller_1.TaskController();
+router.use(auth_middleware_1.authMiddleware);
+router.post('/', task_middleware_1.createTaskValidation, task_middleware_1.handleValidationErrors, (req, res) => taskController.post(req, res));
+router.get('/', task_middleware_1.taskFilterValidation, task_middleware_1.handleValidationErrors, (req, res) => taskController.getAll(req, res));
+router.get('/:id', task_middleware_1.taskIdValidation, task_middleware_1.handleValidationErrors, (req, res) => taskController.getById(req, res));
+router.put('/:id', task_middleware_1.updateTaskValidation, task_middleware_1.handleValidationErrors, (req, res) => taskController.update(req, res));
+router.patch('/:id', task_middleware_1.patchTaskValidation, task_middleware_1.handleValidationErrors, (req, res) => taskController.patch(req, res));
+router.delete('/:id', task_middleware_1.taskIdValidation, task_middleware_1.handleValidationErrors, (req, res) => taskController.delete(req, res));
+exports.default = router;
