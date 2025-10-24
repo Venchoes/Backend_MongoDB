@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateLogin = exports.validateRegistration = void 0;
+exports.validateQueryFilters = exports.validateTaskPatch = exports.validateTaskPut = exports.validateTaskCreate = exports.validateLogin = exports.validateRegistration = void 0;
 const express_validator_1 = require("express-validator");
 exports.validateRegistration = [
     (0, express_validator_1.body)('name')
@@ -62,3 +62,76 @@ const userValidationRules_old = () => {
             .withMessage('Password must be at least 6 characters long'),
     ];
 };
+// =====================
+// Validadores de Task
+// =====================
+exports.validateTaskCreate = [
+    (0, express_validator_1.body)('title').notEmpty().withMessage('Título é obrigatório').isLength({ min: 3 }).withMessage('Título deve ter ao menos 3 caracteres'),
+    (0, express_validator_1.body)('description').optional().isString().withMessage('Descrição deve ser texto').isLength({ max: 2000 }).withMessage('Descrição muito longa'),
+    (0, express_validator_1.body)('status').optional().isIn(['todo', 'in-progress', 'done']).withMessage('Status inválido'),
+    (0, express_validator_1.body)('priority').optional().isIn(['low', 'medium', 'high']).withMessage('Prioridade inválida'),
+    (0, express_validator_1.body)('dueDate').optional().isISO8601().withMessage('dueDate deve ser uma data ISO'),
+    (req, res, next) => {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ error: errors.array()[0].msg });
+        }
+        next();
+    }
+];
+exports.validateTaskPut = [
+    (0, express_validator_1.body)('title').notEmpty().withMessage('Título é obrigatório').isLength({ min: 3 }).withMessage('Título deve ter ao menos 3 caracteres'),
+    (0, express_validator_1.body)('description').optional().isString().withMessage('Descrição deve ser texto').isLength({ max: 2000 }).withMessage('Descrição muito longa'),
+    (0, express_validator_1.body)('status').notEmpty().isIn(['todo', 'in-progress', 'done']).withMessage('Status inválido'),
+    (0, express_validator_1.body)('priority').notEmpty().isIn(['low', 'medium', 'high']).withMessage('Prioridade inválida'),
+    (0, express_validator_1.body)('dueDate').optional({ values: 'null' }).custom((value) => {
+        if (value === null)
+            return true;
+        if (typeof value === 'string') {
+            return !isNaN(Date.parse(value));
+        }
+        throw new Error('dueDate inválido');
+    }),
+    (req, res, next) => {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ error: errors.array()[0].msg });
+        }
+        next();
+    }
+];
+exports.validateTaskPatch = [
+    (0, express_validator_1.body)('title').optional().isLength({ min: 3 }).withMessage('Título deve ter ao menos 3 caracteres'),
+    (0, express_validator_1.body)('description').optional().isString().withMessage('Descrição deve ser texto').isLength({ max: 2000 }).withMessage('Descrição muito longa'),
+    (0, express_validator_1.body)('status').optional().isIn(['todo', 'in-progress', 'done']).withMessage('Status inválido'),
+    (0, express_validator_1.body)('priority').optional().isIn(['low', 'medium', 'high']).withMessage('Prioridade inválida'),
+    (0, express_validator_1.body)('dueDate').optional({ values: 'null' }).custom((value) => {
+        if (value === null)
+            return true;
+        if (typeof value === 'string') {
+            return !isNaN(Date.parse(value));
+        }
+        throw new Error('dueDate inválido');
+    }),
+    (req, res, next) => {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ error: errors.array()[0].msg });
+        }
+        next();
+    }
+];
+exports.validateQueryFilters = [
+    (0, express_validator_1.query)('status').optional().isIn(['todo', 'in-progress', 'done']).withMessage('Status inválido'),
+    (0, express_validator_1.query)('priority').optional().isIn(['low', 'medium', 'high']).withMessage('Prioridade inválida'),
+    (0, express_validator_1.query)('title').optional().isString().withMessage('title deve ser texto'),
+    (0, express_validator_1.query)('dueDateFrom').optional().isISO8601().withMessage('dueDateFrom inválido'),
+    (0, express_validator_1.query)('dueDateTo').optional().isISO8601().withMessage('dueDateTo inválido'),
+    (req, res, next) => {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ error: errors.array()[0].msg });
+        }
+        next();
+    }
+];

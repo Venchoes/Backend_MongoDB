@@ -2,7 +2,7 @@
 
 #video do youtube: https://www.youtube.com/watch?v=8roSmcjYvPM
 
-Backend completo em Node.js (TypeScript) + Express + MongoDB com autenticação JWT, seguindo arquitetura de camadas.
+Backend completo em Node.js (TypeScript) + Express + MongoDB com autenticação JWT, seguindo arquitetura de camadas. Nesta versão, foi adicionada a funcionalidade completa de CRUD de Task-List protegida por JWT.
 
 ## 📋 Funcionalidades
 
@@ -13,10 +13,19 @@ Backend completo em Node.js (TypeScript) + Express + MongoDB com autenticação 
 ### Rotas Protegidas
 - **GET /protected** - Acesso autorizado apenas com token JWT válido
 
+### Task-List (CRUD protegido)
+- **POST /tasks** - Cria uma tarefa
+- **GET /tasks** - Lista todas as tarefas do usuário autenticado (filtros opcionais)
+  - Filtros: `status=todo|in-progress|done`, `priority=low|medium|high`, `title=<substring>`, `dueDateFrom=<ISO>`, `dueDateTo=<ISO>`
+- **GET /tasks/:id** - Detalhes de uma tarefa
+- **PUT /tasks/:id** - Atualiza totalmente uma tarefa
+- **PATCH /tasks/:id** - Atualiza parcialmente uma tarefa
+- **DELETE /tasks/:id** - Remove uma tarefa
+
 ## 🏗️ Arquitetura
 
 ```
-src/
+api/
 ├── controllers/    # Lógica de requisição/resposta
 ├── services/       # Regras de negócio
 ├── models/         # Schemas do MongoDB (Mongoose)
@@ -53,10 +62,25 @@ cp .env.example .env
 
 ```env
 PORT=3000
-MONGODB_URI=mongodb://localhost:27017/mydatabase
+# Conexão Single (use uma delas)
+# Compatibilidade (legado):
+MONGODB_URI=mongodb://localhost:27017/backend_mongodb
+# Novas variáveis (preferencial):
+MONGODB_URI_LOCAL=mongodb://localhost:27017/backend_mongodb
+MONGODB_URI_ATLAS=
+# Dual Sync (opcional): conecta simultaneamente nos dois
+MONGODB_DUAL_SYNC=false
 JWT_SECRET=sua_chave_secreta_super_segura
 NODE_ENV=development
 ```
+
+### Subir MongoDB local (opcional via Docker Compose)
+
+```bash
+docker compose up -d
+```
+
+O Mongo ficará disponível em `mongodb://localhost:27017`.
 
 ### Executar
 
@@ -77,7 +101,7 @@ A API estará disponível em `http://localhost:3000`
 1. Abra o Insomnia
 2. Application → Preferences → Data → Import Data
 3. Selecione o arquivo `requests/requests.yaml`
-4. Ajuste a variável `base_url` no ambiente
+4. Ajuste a variável `baseUrl` no ambiente (ex.: http://localhost:3000) e defina `token` após o login
 
 ### Exemplos de Requisição
 
@@ -127,6 +151,15 @@ Authorization: Bearer <seu_token_jwt>
 - ✅ **200** - Acesso autorizado
 - ❌ **401** - Token não fornecido ou inválido
 
+### Tasks (/tasks)
+- ✅ **201** - Criado com sucesso (POST)
+- ✅ **200** - Sucesso (GET/PUT/PATCH)
+- ✅ **204** - Removido com sucesso (DELETE)
+- ❌ **400/422** - Dados inválidos (ex.: título muito curto)
+- ❌ **401** - Token ausente ou inválido
+- ❌ **403** - Acesso negado a recurso de outro usuário
+- ❌ **404** - Task não encontrada
+
 ## 🔒 Segurança
 
 - Senhas hashadas com `bcrypt` (salt rounds: 10)
@@ -157,7 +190,7 @@ Logs são salvos em:
 ### MongoDB Atlas (Produção)
 1. Crie um cluster no [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
 2. Obtenha a connection string
-3. Atualize `MONGODB_URI` no ambiente de produção
+3. Atualize `MONGODB_URI_ATLAS` no ambiente de produção (ou use `MONGODB_DUAL_SYNC=true` + `MONGODB_URI_LOCAL`)
 
 ### Vercel/Render
 Configure as variáveis de ambiente no painel da plataforma:

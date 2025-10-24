@@ -15,10 +15,147 @@
       "key": "token",
       "value": "",
       "type": "default"
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "type": "default"
     }
   ],
   "item": [
+    },
     {
+      "name": "Tasks (CRUD)",
+      "item": [
+        {
+          "name": "Create Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Salva o taskId da resposta",
+                  "if (pm.response.code === 201) {",
+                  "  var json = pm.response.json();",
+                  "  if (json && json._id) {",
+                  "    pm.collectionVariables.set('taskId', json._id);",
+                  "    pm.environment.set('taskId', json._id);",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Estudar MongoDB\",\n  \"description\": \"Revisar índices e agregações\",\n  \"status\": \"todo\",\n  \"priority\": \"high\",\n  \"dueDate\": \"2030-01-01T00:00:00.000Z\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/tasks", "host": ["{{base_url}}"], "path": ["tasks"] }
+          },
+          "response": []
+        },
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{base_url}}/tasks", "host": ["{{base_url}}"], "path": ["tasks"] }
+          },
+          "response": []
+        },
+        {
+          "name": "List Tasks (with filters)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{base_url}}/tasks?status=todo&priority=high&title=estudar&dueDateFrom=2025-10-01&dueDateTo=2030-01-01",
+              "host": ["{{base_url}}"],
+              "path": ["tasks"],
+              "query": [
+                {"key":"status","value":"todo"},
+                {"key":"priority","value":"high"},
+                {"key":"title","value":"estudar"},
+                {"key":"dueDateFrom","value":"2025-10-01"},
+                {"key":"dueDateTo","value":"2030-01-01"}
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Task by ID",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{base_url}}/tasks/{{taskId}}", "host": ["{{base_url}}"], "path": ["tasks","{{taskId}}"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Estudar MongoDB a fundo\",\n  \"description\": \"Aulas 1-5\",\n  \"status\": \"in-progress\",\n  \"priority\": \"medium\",\n  \"dueDate\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/tasks/{{taskId}}", "host": ["{{base_url}}"], "path": ["tasks","{{taskId}}"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"done\"\n}" },
+            "url": { "raw": "{{base_url}}/tasks/{{taskId}}", "host": ["{{base_url}}"], "path": ["tasks","{{taskId}}"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{base_url}}/tasks/{{taskId}}", "host": ["{{base_url}}"], "path": ["tasks","{{taskId}}"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Error - No Token (List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/tasks", "host": ["{{base_url}}"], "path": ["tasks"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Invalid Token (List)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer invalid.token.here" } ],
+            "url": { "raw": "{{base_url}}/tasks", "host": ["{{base_url}}"], "path": ["tasks"] }
+          },
+          "response": []
+        }
+      ]
       "name": "Autenticação",
       "item": [
         {
