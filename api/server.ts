@@ -2,6 +2,7 @@ import express from 'express';
 import connectToDatabase from './database/connection.database';
 import authRoutes from './routes/auth.routes';
 import protectedRoutes from './routes/protected.routes';
+import tasksRoutes from './routes/tasks.routes';
 import errorHandler from './middlewares/errorHandler.middleware';
 import { Request, Response } from 'express';
 
@@ -31,6 +32,7 @@ app.get("/", (req: Request, res: Response) => {
 // Rotas (MVP requer /register, /login e /protected)
 app.use('/', authRoutes); // POST /register, POST /login
 app.use('/protected', protectedRoutes); // GET /protected
+app.use('/tasks', tasksRoutes); // CRUD de tarefas (protegido)
 
 // Middleware de erro
 app.use(errorHandler);
@@ -42,4 +44,5 @@ app.listen(PORT, () => {
     console.log('[SERVER]   POST /register');
     console.log('[SERVER]   POST /login');
     console.log('[SERVER]   GET /protected');
+  console.log('[SERVER]   CRUD /tasks');
 });

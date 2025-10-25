@@ -1,41 +1,52 @@
-// modelo task (to-do list)
-import mongoose, { Document, Schema } from 'mongoose';
+import { Schema, model, Document, Types, Model } from 'mongoose';
+import { getSecondaryConnection } from '../database/connection.database';
+
+export type TaskStatus = 'todo' | 'in-progress' | 'done';
+export type TaskPriority = 'low' | 'medium' | 'high';
 
 export interface ITask extends Document {
-    id: mongoose.Types.ObjectId;
-    title: string;
-    description?: string;
-    status: 'pending' | 'in_progress' | 'completed';
-    }
+  user: Types.ObjectId;
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  priority?: TaskPriority;
+  dueDate?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-const TaskSchema: Schema = new Schema({
-    id: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
-    },
-    title: {
-        type: String, 
-        required: [true, 'Título é obrigatório'],
-        trim: true,
-        minlength: [1, 'Título deve ter no mínimo 1 caractere'],
-        maxlength: [200, 'Título deve ter no máximo 200 caracteres'], 
-    },
-    description: {
-      type: String,
-      trim: true,
-      maxlength: [500, 'Descrição deve ter no máximo 500 caracteres'],
-    },
+const taskSchema = new Schema<ITask>(
+  {
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    title: { type: String, required: true, trim: true, minlength: 3, maxlength: 120 },
+    description: { type: String, trim: true, maxlength: 2000 },
     status: {
       type: String,
-      enum: ['pending', 'in_progress', 'completed'],
-      default: 'pending',
+      enum: ['todo', 'in-progress', 'done'],
+      default: 'todo',
+      index: true,
     },
-  });
+    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium', index: true },
+    dueDate: { type: Date, required: false, default: null },
+  },
+  { timestamps: true }
+);
 
-TaskSchema.index({ id: 1, status: 1 });
-TaskSchema.index({ id: 1, priority: 1 });
-TaskSchema.index({ id: 1, createdAt: -1 });
+taskSchema.index({ user: 1, status: 1 });
+taskSchema.index({ user: 1, priority: 1 });
+taskSchema.index({ user: 1, createdAt: -1 });
 
-export default mongoose.model<ITask>('Task', TaskSchema);
+export const Task = model<ITask>('Task', taskSchema);
+
+// Função para obter o modelo local (lazy loading)
+let taskLocalModel: Model<ITask> | null = null;
+
+export const getTaskLocal = (): Model<ITask> | null => {
+  if (!taskLocalModel) {
+    const secondaryConn = getSecondaryConnection();
+    if (secondaryConn) {
+      taskLocalModel = secondaryConn.model<ITask>('Task', taskSchema);
+    }
+  }
+  return taskLocalModel;
+};

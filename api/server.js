@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const connection_database_1 = __importDefault(require("./database/connection.database"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const protected_routes_1 = __importDefault(require("./routes/protected.routes"));
+const tasks_routes_1 = __importDefault(require("./routes/tasks.routes"));
 const errorHandler_middleware_1 = __importDefault(require("./middlewares/errorHandler.middleware"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 // Rotas (MVP requer /register, /login e /protected)
 app.use('/', auth_routes_1.default); // POST /register, POST /login
 app.use('/protected', protected_routes_1.default); // GET /protected
+app.use('/tasks', tasks_routes_1.default); // CRUD de tarefas (protegido)
 // Middleware de erro
 app.use(errorHandler_middleware_1.default);
 // Start the server
@@ -34,4 +36,5 @@ app.listen(PORT, () => {
     console.log('[SERVER]   POST /register');
     console.log('[SERVER]   POST /login');
     console.log('[SERVER]   GET /protected');
+    console.log('[SERVER]   CRUD /tasks');
 });

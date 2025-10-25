@@ -22,6 +22,14 @@ export class UnauthorizedException extends Error {
   }
 }
 
+export class ForbiddenException extends Error {
+  status = 403;
+  constructor(message: string) {
+    super(message);
+    this.name = 'ForbiddenException';
+  }
+}
+
 export class NotFoundException extends Error {
   status = 404;
   constructor(message: string) {
