@@ -1,6 +1,8 @@
 # Backend_MongoDB
 
-#video do youtube: https://www.youtube.com/watch?v=8roSmcjYvPM
+#video do youtube (parte 1): https://www.youtube.com/watch?v=8roSmcjYvPM
+
+#video do youtube (parte 2): https://www.youtube.com/watch?v=j15WMb6vSec
 
 Backend completo em Node.js (TypeScript) + Express + MongoDB com autenticação JWT, seguindo arquitetura de camadas. Nesta versão, foi adicionada a funcionalidade completa de CRUD de Task-List protegida por JWT.
 
