@@ -8,6 +8,14 @@ let secondaryConnection: mongoose.Connection | null = null;
 
 const getSecondaryConnection = () => secondaryConnection;
 
+// Opções padrão para o driver MongoDB/Mongoose
+const mongooseOptions: any = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    // timeout para evitar bloqueios longos ao conectar
+    serverSelectionTimeoutMS: 10000,
+};
+
 const connectToDatabase = async () => {
     try {
     const dualSync = process.env.MONGODB_DUAL_SYNC === 'true';
@@ -22,10 +30,10 @@ const connectToDatabase = async () => {
             let secondaryOk = false;
 
             // Conecta ao Atlas na conexão principal (tenta, mas não derruba se falhar)
-            if (uriAtlas || uriSingleLegacy) {
+                if (uriAtlas || uriSingleLegacy) {
                 try {
                     console.log('[DATABASE] Conectando ao MongoDB Atlas...');
-                    await mongoose.connect(uriAtlas || (uriSingleLegacy as string));
+                    await mongoose.connect(uriAtlas || (uriSingleLegacy as string), mongooseOptions);
                     console.log('[DATABASE] ✅ Conectado ao MongoDB Atlas');
                     primaryOk = true;
                 } catch (err) {
@@ -37,7 +45,7 @@ const connectToDatabase = async () => {
             if (uriLocal || uriSingleLegacy) {
                 try {
                     console.log('[DATABASE] Conectando ao MongoDB Local...');
-                    secondaryConnection = mongoose.createConnection(uriLocal || (uriSingleLegacy as string) || 'mongodb://localhost:27017/backend_mongodb');
+                    secondaryConnection = mongoose.createConnection(uriLocal || (uriSingleLegacy as string) || 'mongodb://localhost:27017/backend_mongodb', mongooseOptions);
                     await new Promise<void>((resolve, reject) => {
                         const timeout = setTimeout(() => reject(new Error('Timeout connecting to Local DB')), 10000);
                         secondaryConnection!.on('connected', () => {
@@ -53,10 +61,10 @@ const connectToDatabase = async () => {
                     secondaryOk = true;
 
                     // Se Atlas falhou mas o Local subiu, vincular a conexão padrão ao Local
-                    if (!primaryOk) {
+                        if (!primaryOk) {
                         try {
                             console.log('[DATABASE] Definindo conexão padrão para o MongoDB Local (fallback) ...');
-                            await mongoose.connect(uriLocal || (uriSingleLegacy as string) || 'mongodb://localhost:27017/backend_mongodb');
+                            await mongoose.connect(uriLocal || (uriSingleLegacy as string) || 'mongodb://localhost:27017/backend_mongodb', mongooseOptions);
                             console.log('[DATABASE] ✅ Conexão padrão agora aponta para Local');
                         } catch (err2) {
                             console.error('[DATABASE] ❌ Falha ao ajustar conexão padrão para Local:', err2 instanceof Error ? err2.message : String(err2));
@@ -76,7 +84,7 @@ const connectToDatabase = async () => {
             // Modo single (conecta apenas a um)
             const uri = uriAtlas || uriLocal || uriSingleLegacy || 'mongodb://localhost:27017/backend_mongodb';
             console.log('[DATABASE] Conectando ao MongoDB...');
-            await mongoose.connect(uri);
+            await mongoose.connect(uri, mongooseOptions);
             console.log('[DATABASE] ✅ Conexão estabelecida');
         }
     } catch (error) {
