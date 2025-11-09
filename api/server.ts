@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import connectToDatabase from './database/connection.database';
 import authRoutes from './routes/auth.routes';
 import protectedRoutes from './routes/protected.routes';
@@ -17,6 +18,8 @@ connectToDatabase();
 
 // Configure the Express application
 app.use(express.json());
+// Enable CORS for all routes (adjust origin in production if needed)
+app.use(cors());
 
 app.get("/", (req: Request, res: Response) => {
   

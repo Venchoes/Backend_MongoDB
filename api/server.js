@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 const connection_database_1 = __importDefault(require("./database/connection.database"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const protected_routes_1 = __importDefault(require("./routes/protected.routes"));
@@ -17,6 +18,8 @@ console.log('[SERVER] Ambiente:', process.env.NODE_ENV || 'development');
 (0, connection_database_1.default)();
 // Configure the Express application
 app.use(express_1.default.json());
+// Enable CORS for all routes (adjust origin in production if needed)
+app.use((0, cors_1.default)());
 app.get("/", (req, res) => {
     res.status(200).json({
         message: '🚀 Projeto Backend com Express e MongoDB funcionando corretamente :)!',
