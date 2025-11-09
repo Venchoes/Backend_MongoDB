@@ -8,7 +8,7 @@ import errorHandler from './middlewares/errorHandler.middleware';
 import { Request, Response } from 'express';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 console.log('[SERVER] Iniciando servidor...');
 console.log('[SERVER] Ambiente:', process.env.NODE_ENV || 'development');
@@ -40,9 +40,9 @@ app.use('/tasks', tasksRoutes); // CRUD de tarefas (protegido)
 // Middleware de erro
 app.use(errorHandler);
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`[SERVER] ✅ Servidor rodando em http://localhost:${PORT}`);
+// Start the server (bind to 0.0.0.0 so it's reachable from the host/container network)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`[SERVER] ✅ Servidor rodando em http://0.0.0.0:${PORT} (ou http://localhost:${PORT} no host)`);
     console.log('[SERVER] Endpoints disponíveis:');
     console.log('[SERVER]   POST /register');
     console.log('[SERVER]   POST /login');
