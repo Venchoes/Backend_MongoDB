@@ -64,7 +64,11 @@ export const loginUser = async (email: string, password: string): Promise<string
         throw new UnauthorizedException('Senha incorreta');
     }
 
-    const token = sign({ id: user._id.toString(), email: user.email } as UserPayload, JWT_SECRET, { expiresIn: '1h' });
+    // Em ambiente de desenvolvimento/local, usamos expiração curta para testes.
+    // Em desenvolvimento/local usamos 3600 segundos (1 hora) conforme solicitado
+    // Para satisfazer as assinaturas do jwt e TS, normalize para string quando necessário
+    const jwtExpiry: number = process.env.NODE_ENV === 'production' ? 3600 : 3600; // production também 3600s (1h)
+    const token = sign({ id: user._id.toString(), email: user.email } as UserPayload, JWT_SECRET, { expiresIn: jwtExpiry });
     logger.info(`User logged in: ${email}`);
     return token;
 };
